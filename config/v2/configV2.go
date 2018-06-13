@@ -87,6 +87,7 @@ type MetricConfig struct {
 	DeleteLabels         map[string]string    `yaml:"delete_labels,omitempty"` // TODO: Make sure that DeleteMatch is not nil if DeleteLabels are used.
 	DeleteLabelTemplates []templates.Template `yaml:"-"`                       // parsed version of DeleteLabels, will not be serialized to yaml.
 	Mutate               []MutateConfig       `yaml:",flow,omitempty"`
+	ValueReplace         []string             `yaml:"value_replace,flow,omitempty"`
 }
 
 type MutateConfig struct {
