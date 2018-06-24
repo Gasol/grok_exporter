@@ -42,10 +42,11 @@ type Metric interface {
 
 // Common values for incMetric and observeMetric
 type metric struct {
-	name        string
-	regex       *OnigurumaRegexp
-	deleteRegex *OnigurumaRegexp
-	retention   time.Duration
+	name         string
+	regex        *OnigurumaRegexp
+	deleteRegex  *OnigurumaRegexp
+	retention    time.Duration
+	valueReplace []string
 }
 
 type observeMetric struct {
@@ -172,7 +173,7 @@ func (m *observeMetric) processMatch(line string, cb func(value float64)) (*Matc
 	}
 	defer matchResult.Free()
 	if matchResult.IsMatch() {
-		floatVal, err := floatValue(m.Name(), matchResult, m.valueTemplate)
+		floatVal, err := floatValue(m.Name(), matchResult, m.valueTemplate, m.valueReplace)
 		if err != nil {
 			return nil, err
 		}
@@ -215,7 +216,7 @@ func (m *observeMetricWithLabels) processMatch(line string, cb func(value float6
 	}
 	defer matchResult.Free()
 	if matchResult.IsMatch() {
-		floatVal, err := floatValue(m.Name(), matchResult, m.valueTemplate)
+		floatVal, err := floatValue(m.Name(), matchResult, m.valueTemplate, m.valueReplace)
 		if err != nil {
 			return nil, err
 		}
@@ -377,10 +378,11 @@ func (m *summaryVecMetric) ProcessRetention() error {
 
 func newMetric(cfg *configuration.MetricConfig, regex, deleteRegex *OnigurumaRegexp) metric {
 	return metric{
-		name:        cfg.Name,
-		regex:       regex,
-		deleteRegex: deleteRegex,
-		retention:   cfg.Retention,
+		name:         cfg.Name,
+		regex:        regex,
+		deleteRegex:  deleteRegex,
+		retention:    cfg.Retention,
+		valueReplace: cfg.ValueReplace,
 	}
 }
 
@@ -501,10 +503,17 @@ func labelValues(metricName string, matchResult *OnigurumaMatchResult, templates
 	return result, nil
 }
 
-func floatValue(metricName string, matchResult *OnigurumaMatchResult, valueTemplate templates.Template) (float64, error) {
+func floatValue(metricName string, matchResult *OnigurumaMatchResult, valueTemplate templates.Template, valueReplace []string) (float64, error) {
 	stringVal, err := evalTemplate(matchResult, valueTemplate)
 	if err != nil {
 		return 0, fmt.Errorf("error processing metric %v: %v", metricName, err.Error())
+	}
+	for i := 0; i+1 <= len(valueReplace); i += 2 {
+		search := valueReplace[i]
+		replace := valueReplace[i+1]
+		if (stringVal == search) {
+			return strconv.ParseFloat(replace, 64)
+		}
 	}
 	floatVal, err := strconv.ParseFloat(stringVal, 64)
 	if err != nil {
