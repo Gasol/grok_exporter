@@ -189,6 +189,7 @@ func createMetrics(cfg *v2.Config, patterns *exporter.Patterns, libonig *exporte
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize metric %v: %v", m.Name, err.Error())
 		}
+		// XXX Gasol
 		switch m.Type {
 		case "counter":
 			result = append(result, exporter.NewCounterMetric(&m, regex, deleteRegex))

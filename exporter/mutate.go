@@ -37,6 +37,8 @@ func createMutator(config v2.MutateConfig) Mutator {
 	if config.Filter == "gsub" {
 		array := config.Input.Array
 		inputs := make([]GsubInput, 0, len(array)/2+1)
+
+		fmt.Printf("%d\n", len(array))
 		for i := 0; i+2 <= len(array); i += 3 {
 			regex, err := libonig.Compile(array[i+1])
 			if err != nil {
@@ -48,6 +50,7 @@ func createMutator(config v2.MutateConfig) Mutator {
 				regex:       regex,
 			})
 		}
+		fmt.Printf("%+v\n", inputs)
 		return GsubMutator{
 			inputs: inputs,
 		}

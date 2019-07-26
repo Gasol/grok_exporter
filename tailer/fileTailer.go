@@ -212,4 +212,4 @@ type simpleLogger interface {
 
 type nilLogger struct{}
 
-func (_ *nilLogger) Debug(_ string, _ ...interface{}) {}
+func (_ *nilLogger) Debug(format string, a ...interface{}) {}

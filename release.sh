@@ -24,7 +24,7 @@ export VERSION_FLAGS="\
 #--------------------------------------------------------------
 
 go fmt $(go list ./... | grep -v /vendor/)
-go test $(go list ./... | grep -v /vendor/)
+#go test $(go list ./... | grep -v /vendor/)
 
 function make_release {
     MACHINE=$1
@@ -42,7 +42,7 @@ function make_release {
         docker run -v $GOPATH/src/github.com/fstab/grok_exporter:/root/go/src/github.com/fstab/grok_exporter --net none --rm -ti fstab/grok_exporter-compiler compile-$ARCH.sh -ldflags "$VERSION_FLAGS" -o dist/grok_exporter-$VERSION.$ARCH/grok_exporter$EXTENSION
     else
         # export CGO_LDFLAGS=/usr/local/lib/libonig.a
-        go build -ldflags "$VERSION_FLAGS" -o dist/grok_exporter-$VERSION.$ARCH/grok_exporter .
+        echo go build -ldflags "$VERSION_FLAGS" -o dist/grok_exporter-$VERSION.$ARCH/grok_exporter .
     fi
     if [[ $ARCH == darwin* ]] || [[ $ARCH == linux* ]] || [[ $ARCH == freebsd* ]]; then
         # Undo workaround with LDFLAGS in oniguruma.go
@@ -58,6 +58,4 @@ function make_release {
     cd ..
 }
 
-make_release native darwin-amd64
-make_release docker linux-amd64
-make_release docker windows-amd64 .exe
+make_release native freebsd-amd64
